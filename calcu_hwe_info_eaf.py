@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding:utf-8
 import gzip
 import sys
 import re
@@ -7,7 +8,7 @@ from numpy import *
 
 
 def get_max_gen_rapid(gps):
-
+    ''' return the max gen position matrix'''
     (nrow, ncol) = gps.shape
     d0 = full((nrow, 2), False)
     d1 = full((nrow, 1), True)
@@ -82,8 +83,8 @@ def calculate_hwe_p(hweCount):
 
 
 def get_hwe_info_eaf(gps):
-
-    seterr(divide='ignore', invalid='ignore', over='ignore')
+    ''' get hwe info here'''
+    seterr(divide='ignore', invalid='ignore', over='ignore')  # ignore warnings
     # info count
     N = gps.shape[0]
     eij = gps[:, 1] + gps[:, 2] * 2
@@ -95,6 +96,8 @@ def get_hwe_info_eaf(gps):
     thetaHat = allinfoCount[0] / 2 / N
     denom = 2 * N * thetaHat * (1 - thetaHat)
     info = around(1 - allinfoCount[1] / denom, 5)
+    # block out those where thetaHat is really close to 0 or 1
+    # when very rare
     if around(thetaHat, 2) == 0 or around(thetaHat, 2) == 1:
         info = 1
     elif info < 0:
@@ -114,22 +117,29 @@ def get_hwe_info_eaf(gps):
     hweCount[w] = hweCount[w] + 1
     hwe_p = calculate_hwe_p(hweCount)
 
-    # output
+    # return out
     out = "EAF=" + str(eaf) + ";INFO_SCORE=" + str(info) + \
         ";HWE=" + str(hwe_p)
     return(out)
 
 
 def main():
-    vcf = sys.argv[1]
-    output = sys.argv[2]
+
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='Calculate HWE INFO EAF from STITCH output uncompressed vcf')
+    parser.add_argument('input', help='specify the uncompressed vcf')
+    parser.add_argument('output', help='output file')
+    args = parser.parse_args()
+
+    vcf = args.input
+    output = args.output
     o = open(output, 'w')
     with gzip.open(vcf, 'rb') as f:
         for line in f:
             if re.match('^##', line):
                 continue
             tmp = line.rstrip().split('\t')
-
             if re.match('^#CHROM', line):
                 out = "\t".join(['CHROM', 'POS', 'REF', 'ALT'] + tmp[9:])
             else:

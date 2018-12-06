@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # coding:utf-8
 import os
 import sys
@@ -48,17 +49,27 @@ def chunkify(filename, size=1024 * 1024):
 
 
 def main():
-    vcf = sys.argv[1]
-    cores = 4
+
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='Calculate HWE INFO EAF from STITCH output uncompressed vcf with multiprocessing')
+    parser.add_argument('input', help='specify the uncompressed vcf')
+    parser.add_argument('output', help='output file')
+    parser.add_argument('ncores', type=int, help='the number of cores')
+    parser.add_argument(
+        '-size', type=int, help='the chunk size read from vcf file (default size = 1024 * 1024 * 10 means processing 40 lines per thread for 10k samples)')
+    args = parser.parse_args()
+
+    vcf = args.input
+    cores = args.ncores
     pool = mp.Pool(cores)
     jobs = []
-    size = 1024 * 1024 * 10  # process 40 lines per job
-
+    size = 1024 * 1024 * 10  # process 40 lines per job for 10k samples
     for chunkStart, chunkSize in chunkify(vcf, size):
         jobs.append(pool.apply_async(
             process_wrapper, (vcf, chunkStart, chunkSize)))
 
-    output = sys.argv[2]
+    output = args.output
     o = open(output, 'w')
     for job in jobs:
         o.writelines(job.get())
