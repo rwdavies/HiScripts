@@ -60,9 +60,11 @@ def main():
 
     vcf = args.input
     cores = args.ncores
+    size = 1024 * 1024 * 10  # process 40 lines per job for 10k samples
+    if args.size:
+        size = args.size
     pool = mp.Pool(cores)
     jobs = []
-    size = 1024 * 1024 * 10  # process 40 lines per job for 10k samples
     for chunkStart, chunkSize in chunkify(vcf, size):
         jobs.append(pool.apply_async(
             process_wrapper, (vcf, chunkStart, chunkSize)))
