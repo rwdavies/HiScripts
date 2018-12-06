@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-# coding:utf-8
+# coding: utf-8
 import os
-import sys
-import gzip
 import re
 import multiprocessing as mp
 from calcu_hwe_info_eaf import *

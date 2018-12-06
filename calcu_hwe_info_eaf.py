@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# coding:utf-8
-import gzip
+# coding: utf-8
 import sys
 import re
 import math
@@ -135,13 +134,13 @@ def main():
     vcf = args.input
     output = args.output
     o = open(output, 'w')
-    with gzip.open(vcf, 'rb') as f:
+    with open(vcf) as f:
         for line in f:
             if re.match('^##', line):
                 continue
             tmp = line.rstrip().split('\t')
             if re.match('^#CHROM', line):
-                out = "\t".join(['CHROM', 'POS', 'REF', 'ALT'] + tmp[9:])
+                continue
             else:
                 gps = array(
                     [map(lambda gi:float(gi), g.split(':')[1].split(',')) for g in tmp[9:]])
